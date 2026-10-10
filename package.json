@@ -1,0 +1,13 @@
+{
+  "name": "cyber-monte",
+  "version": "1.0.0",
+  "description": "The Data Shuffler Game",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

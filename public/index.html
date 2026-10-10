@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLASS SHUFFLE GAME</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-outer-frame">
+        <div id="game-container">
+            <!-- Top HUD Panel -->
+            <header class="hud-panel">
+                <div class="stat-group">
+                    <span class="label">SCORE:</span>
+                    <span id="score-display" class="value">0</span>
+                </div>
+                <div class="stat-group">
+                    <span class="label">LEVEL:</span>
+                    <span id="level-display" class="value">1</span>
+                </div>
+                <div class="stat-group">
+                    <span class="label">LIVES:</span>
+                    <span id="lives-display" class="value">3</span>
+                    <div class="icons-row">
+                        <span class="icon-pulse">💖</span>
+                        <span class="icon-pulse">⚡</span>
+                        <span class="icon-pulse">🔋</span>
+                    </div>
+                </div>
+                <div class="stat-group">
+                    <span class="label">COMBO:</span>
+                    <span id="combo-display" class="value">0</span>
+                </div>
+                <div class="stat-group">
+                    <span class="label">BEST SCORE:</span>
+                    <span id="best-score-display" class="value">0</span>
+                </div>
+            </header>
+
+            <!-- Sci-Fi Title Banner -->
+            <div class="cyber-title-banner">
+                <span class="banner-tag">// SECURE.NODE</span>
+                <h1 class="main-game-title">WELCOME TO GLASS SHUFFLE</h1>
+                <span class="banner-tag">V1.0.4 //</span>
+            </div>
+
+            <div aria-live="polite" id="status-message" class="status-message">SYSTEM READY</div>
+
+            <div id="play-area">
+                <div id="token" class="token hidden"></div>
+
+                <!-- Glass 1 -->
+                <button class="vault classic-glass" id="vault-0" aria-label="Glass 1" tabindex="0" disabled>
+                    <div class="glass-rim"></div>
+                    <div class="glass-body"></div>
+                    <div class="glass-base"></div>
+                    <div class="vault-base-glow"></div>
+                </button>
+
+                <!-- Glass 2 -->
+                <button class="vault classic-glass" id="vault-1" aria-label="Glass 2" tabindex="0" disabled>
+                    <div class="glass-rim"></div>
+                    <div class="glass-body"></div>
+                    <div class="glass-base"></div>
+                    <div class="vault-base-glow"></div>
+                </button>
+
+                <!-- Glass 3 -->
+                <button class="vault classic-glass" id="vault-2" aria-label="Glass 3" tabindex="0" disabled>
+                    <div class="glass-rim"></div>
+                    <div class="glass-body"></div>
+                    <div class="glass-base"></div>
+                    <div class="vault-base-glow"></div>
+                </button>
+            </div>
+
+            <!-- Bottom Controls Panel -->
+            <div class="controls-panel">
+                <button id="start-btn" class="sci-btn">INITIALIZE (START)</button>
+                <button id="pause-btn" class="sci-btn" disabled>PAUSE (SPACE)</button>
+                <button id="restart-btn" class="sci-btn magenta">REBOOT (RESTART)</button>
+                <button id="mute-btn" class="sci-btn">🔊 SOUND: ON</button>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="game-over-screen" class="overlay hidden">
+                <h2 id="game-over-title">SYSTEM FAILURE</h2>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <p>Best Score: <span id="best-score-overlay">0</span></p>
+                <p id="server-status" class="server-msg"></p>
+                <button id="play-again-btn" class="sci-btn">RECONNECT (PLAY AGAIN)</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
