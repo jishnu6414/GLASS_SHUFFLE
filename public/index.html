@@ -3,94 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLASS SHUFFLE GAME</title>
+    <title>GLASS SHUFFLE — BETTING</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="game-outer-frame">
+        <div class="corner-bracket tl"></div>
+        <div class="corner-bracket tr"></div>
+        <div class="corner-bracket bl"></div>
+        <div class="corner-bracket br"></div>
+        <div class="corner-dot tl-dot"></div>
+        <div class="corner-dot tr-dot"></div>
+        <div class="corner-dot bl-dot"></div>
+        <div class="corner-dot br-dot"></div>
+
         <div id="game-container">
-            <!-- Top HUD Panel -->
-            <header class="hud-panel">
-                <div class="stat-group">
-                    <span class="label">SCORE:</span>
-                    <span id="score-display" class="value">0</span>
+
+            <!-- ===== NAVBAR ===== -->
+            <nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-symbol">◈</span>
+        <span class="brand-text">GLASS SHUFFLE</span>
+    </div>
+    <div class="nav-tabs">
+        <button class="nav-tab active" data-page="game">GAME</button>
+        <button class="nav-tab" data-page="profile">PROFILE</button>
+        <button class="nav-tab" data-page="history">HISTORY</button>
+    </div>
+    <div class="nav-actions">
+        <button id="topup-btn" class="nav-action-btn topup-btn">
+            <span class="icon">＋</span> TOP UP
+        </button>
+        <button id="sound-toggle" class="nav-action-btn sound-btn" aria-label="Toggle sound">
+            <span class="sound-icon">🔊</span>
+        </button>
+        <div class="nav-balance">₹<span id="nav-balance-value">1,000</span></div>
+    </div>
+</nav>
+
+            <!-- ===== PAGE: GAME ===== -->
+            <section class="page active" id="page-game">
+                <header class="hud-panel">
+                    <div class="stat-box">
+                        <span class="label">BALANCE</span>
+                        <span id="balance-display" class="value">₹1,000</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">CURRENT BET</span>
+                        <span id="bet-display" class="value">₹0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">LAST RESULT</span>
+                        <span id="last-result-display" class="value">—</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">NET PROFIT</span>
+                        <span id="net-profit-display" class="value">₹0</span>
+                    </div>
+                </header>
+
+                <div class="cyber-title-banner">
+                    <h1 class="main-game-title">SELECT THE VAULT!</h1>
                 </div>
-                <div class="stat-group">
-                    <span class="label">LEVEL:</span>
-                    <span id="level-display" class="value">1</span>
+
+                <div id="status-message" class="status-message" aria-live="polite">SYSTEM READY</div>
+
+                <div id="play-area">
+                    <div id="token" class="token hidden"></div>
+
+                    <button class="vault" id="vault-0" aria-label="Vault 1" tabindex="0" disabled>
+                        <div class="vault-side left"></div>
+                        <div class="vault-body">
+                            <div class="vault-top-rim"></div>
+                            <div class="vault-face">
+                                <div class="vault-emblem">
+                                    <svg viewBox="0 0 40 44">
+                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="vault-bottom-rim"></div>
+                        </div>
+                        <div class="vault-side right"></div>
+                        <div class="vault-base-glow"></div>
+                    </button>
+
+                    <button class="vault" id="vault-1" aria-label="Vault 2" tabindex="0" disabled>
+                        <div class="vault-side left"></div>
+                        <div class="vault-body">
+                            <div class="vault-top-rim"></div>
+                            <div class="vault-face">
+                                <div class="vault-emblem">
+                                    <svg viewBox="0 0 40 44">
+                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="vault-bottom-rim"></div>
+                        </div>
+                        <div class="vault-side right"></div>
+                        <div class="vault-base-glow"></div>
+                    </button>
+
+                    <button class="vault" id="vault-2" aria-label="Vault 3" tabindex="0" disabled>
+                        <div class="vault-side left"></div>
+                        <div class="vault-body">
+                            <div class="vault-top-rim"></div>
+                            <div class="vault-face">
+                                <div class="vault-emblem">
+                                    <svg viewBox="0 0 40 44">
+                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="vault-bottom-rim"></div>
+                        </div>
+                        <div class="vault-side right"></div>
+                        <div class="vault-base-glow"></div>
+                    </button>
                 </div>
-                <div class="stat-group">
-                    <span class="label">LIVES:</span>
-                    <span id="lives-display" class="value">3</span>
-                    <div class="icons-row">
-                        <span class="icon-pulse">💖</span>
-                        <span class="icon-pulse">⚡</span>
-                        <span class="icon-pulse">🔋</span>
+
+                <!-- Bet controls -->
+                <div class="bet-panel">
+                    <div class="bet-input-wrap">
+                        <label for="bet-input" class="bet-label">BET AMOUNT</label>
+                        <div class="bet-input-row">
+                            <span class="currency">₹</span>
+                            <input type="number" id="bet-input" class="bet-input"
+                                   min="10" max="10000" step="10" value="100">
+                        </div>
+                        <div class="quick-bets">
+                            <button class="quick-btn" data-amt="50">₹50</button>
+                            <button class="quick-btn" data-amt="100">₹100</button>
+                            <button class="quick-btn" data-amt="500">₹500</button>
+                            <button class="quick-btn" data-amt="1000">₹1,000</button>
+                        </div>
+                    </div>
+                    <button id="start-btn" class="sci-btn primary">PLACE BET &amp; START</button>
+                </div>
+
+                <!-- Result panel -->
+                <div id="result-panel" class="result-panel hidden">
+                    <div class="result-row"><span>BET</span><span id="result-bet">₹0</span></div>
+                    <div class="result-row"><span>RESULT</span><span id="result-outcome">—</span></div>
+                    <div class="result-row"><span>PAYOUT</span><span id="result-payout">₹0</span></div>
+                    <div class="result-row highlight"><span>NET</span><span id="result-profit">₹0</span></div>
+                </div>
+            </section>
+
+            <!-- ===== PAGE: PROFILE ===== -->
+            <section class="page" id="page-profile">
+                <h2 class="page-title">USER PROFILE</h2>
+                <div class="profile-grid">
+                    <div class="profile-card">
+                        <span class="profile-label">USERNAME</span>
+                        <span id="p-username" class="profile-value">PLAYER</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">BALANCE</span>
+                        <span id="p-balance" class="profile-value accent">₹0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">GAMES PLAYED</span>
+                        <span id="p-games" class="profile-value">0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">WINS</span>
+                        <span id="p-wins" class="profile-value green">0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">LOSSES</span>
+                        <span id="p-losses" class="profile-value magenta">0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">TOTAL WAGERED</span>
+                        <span id="p-wagered" class="profile-value">₹0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">TOTAL WON</span>
+                        <span id="p-won" class="profile-value green">₹0</span>
+                    </div>
+                    <div class="profile-card">
+                        <span class="profile-label">TOTAL LOST</span>
+                        <span id="p-lost" class="profile-value magenta">₹0</span>
+                    </div>
+                    <div class="profile-card wide">
+                        <span class="profile-label">NET PROFIT</span>
+                        <span id="p-net" class="profile-value">₹0</span>
                     </div>
                 </div>
-                <div class="stat-group">
-                    <span class="label">COMBO:</span>
-                    <span id="combo-display" class="value">0</span>
+                <div class="profile-actions">
+                    <button id="reset-profile-btn" class="sci-btn">RESET ACCOUNT</button>
                 </div>
-                <div class="stat-group">
-                    <span class="label">BEST SCORE:</span>
-                    <span id="best-score-display" class="value">0</span>
+            </section>
+
+            <!-- ===== PAGE: HISTORY ===== -->
+            <section class="page" id="page-history">
+                <h2 class="page-title">BETTING HISTORY</h2>
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>ROUND</th>
+                                <th>DATE</th>
+                                <th>BET</th>
+                                <th>CHOSEN</th>
+                                <th>RESULT</th>
+                                <th>PAYOUT</th>
+                                <th>NET</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                            <tr><td colspan="7" class="empty">No rounds yet.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </header>
+                <div class="history-actions">
+                    <button id="clear-history-btn" class="sci-btn magenta">CLEAR HISTORY</button>
+                </div>
+            </section>
 
-            <!-- Sci-Fi Title Banner -->
-            <div class="cyber-title-banner">
-                <span class="banner-tag">// SECURE.NODE</span>
-                <h1 class="main-game-title">WELCOME TO GLASS SHUFFLE</h1>
-                <span class="banner-tag">V1.0.4 //</span>
-            </div>
-
-            <div aria-live="polite" id="status-message" class="status-message">SYSTEM READY</div>
-
-            <div id="play-area">
-                <div id="token" class="token hidden"></div>
-
-                <!-- Glass 1 -->
-                <button class="vault classic-glass" id="vault-0" aria-label="Glass 1" tabindex="0" disabled>
-                    <div class="glass-rim"></div>
-                    <div class="glass-body"></div>
-                    <div class="glass-base"></div>
-                    <div class="vault-base-glow"></div>
-                </button>
-
-                <!-- Glass 2 -->
-                <button class="vault classic-glass" id="vault-1" aria-label="Glass 2" tabindex="0" disabled>
-                    <div class="glass-rim"></div>
-                    <div class="glass-body"></div>
-                    <div class="glass-base"></div>
-                    <div class="vault-base-glow"></div>
-                </button>
-
-                <!-- Glass 3 -->
-                <button class="vault classic-glass" id="vault-2" aria-label="Glass 3" tabindex="0" disabled>
-                    <div class="glass-rim"></div>
-                    <div class="glass-body"></div>
-                    <div class="glass-base"></div>
-                    <div class="vault-base-glow"></div>
-                </button>
-            </div>
-
-            <!-- Bottom Controls Panel -->
-            <div class="controls-panel">
-                <button id="start-btn" class="sci-btn">INITIALIZE (START)</button>
-                <button id="pause-btn" class="sci-btn" disabled>PAUSE (SPACE)</button>
-                <button id="restart-btn" class="sci-btn magenta">REBOOT (RESTART)</button>
-                <button id="mute-btn" class="sci-btn">🔊 SOUND: ON</button>
-            </div>
-
-            <!-- Game Over Overlay -->
-            <div id="game-over-screen" class="overlay hidden">
-                <h2 id="game-over-title">SYSTEM FAILURE</h2>
-                <p>Final Score: <span id="final-score">0</span></p>
-                <p>Best Score: <span id="best-score-overlay">0</span></p>
-                <p id="server-status" class="server-msg"></p>
-                <button id="play-again-btn" class="sci-btn">RECONNECT (PLAY AGAIN)</button>
-            </div>
         </div>
     </div>
     <script src="game.js"></script>

@@ -1,208 +1,308 @@
-// Game State
-const gameState = {
-    phase: "ready", 
-    tokenPosition: 1, 
-    score: 0,
-    level: 1,
-    lives: 3,
-    combo: 0,
-    bestScore: localStorage.getItem('cyberMonteBest') || 0,
-    soundEnabled: localStorage.getItem('cyberMonteSound') !== 'false',
-    isRunning: false,
-    isPaused: false
+/* =========================================================
+   GLASS SHUFFLE — BETTING LOGIC (frontend / localStorage demo)
+   ========================================================= */
+
+const STORAGE = {
+    balance: 'glassShuffleBalance',
+    net: 'glassShuffleNetProfit',
+    history: 'glassShuffleHistory',
+    stats: 'glassShuffleStats'
 };
 
-// DOM Elements
+const gameState = {
+    phase: 'idle',          // idle | countdown | reveal | shuffle | guess | result
+    tokenPosition: 1,
+    balance: parseFloat(localStorage.getItem(STORAGE.balance) ?? '1000'),
+    netProfit: parseFloat(localStorage.getItem(STORAGE.net) ?? '0'),
+    currentBet: 0,
+    isRunning: false
+};
+
+const stats = JSON.parse(localStorage.getItem(STORAGE.stats) || JSON.stringify({
+    games: 0, wins: 0, losses: 0,
+    wagered: 0, won: 0, lost: 0
+}));
+
+let history = JSON.parse(localStorage.getItem(STORAGE.history) || '[]');
+
 const els = {
-    score: document.getElementById('score-display'),
-    level: document.getElementById('level-display'),
-    lives: document.getElementById('lives-display'),
-    combo: document.getElementById('combo-display'),
-    bestScore: document.getElementById('best-score-display'),
+    // HUD
+    balance: document.getElementById('balance-display'),
+    bet: document.getElementById('bet-display'),
+    lastResult: document.getElementById('last-result-display'),
+    netProfit: document.getElementById('net-profit-display'),
+    navBalance: document.getElementById('nav-balance-value'),
+
     status: document.getElementById('status-message'),
+
     vaults: [
         document.getElementById('vault-0'),
         document.getElementById('vault-1'),
         document.getElementById('vault-2')
     ],
+
     token: document.getElementById('token'),
-    btns: {
-        start: document.getElementById('start-btn'),
-        pause: document.getElementById('pause-btn'),
-        restart: document.getElementById('restart-btn'),
-        mute: document.getElementById('mute-btn'),
-        playAgain: document.getElementById('play-again-btn')
-    },
-    gameOver: document.getElementById('game-over-screen'),
-    gameOverTitle: document.getElementById('game-over-title'),
-    finalScore: document.getElementById('final-score'),
-    bestScoreOverlay: document.getElementById('best-score-overlay'),
-    serverMsg: document.getElementById('server-status')
+
+    betInput: document.getElementById('bet-input'),
+    quickBtns: document.querySelectorAll('.quick-btn'),
+    startBtn: document.getElementById('start-btn'),
+
+    resultPanel: document.getElementById('result-panel'),
+    resultBet: document.getElementById('result-bet'),
+    resultOutcome: document.getElementById('result-outcome'),
+    resultPayout: document.getElementById('result-payout'),
+    resultProfit: document.getElementById('result-profit'),
+
+    // Navbar
+    navTabs: document.querySelectorAll('.nav-tab'),
+    pages: document.querySelectorAll('.page'),
+
+    // Profile
+    pUsername: document.getElementById('p-username'),
+    pBalance:  document.getElementById('p-balance'),
+    pGames:    document.getElementById('p-games'),
+    pWins:     document.getElementById('p-wins'),
+    pLosses:   document.getElementById('p-losses'),
+    pWagered:  document.getElementById('p-wagered'),
+    pWon:      document.getElementById('p-won'),
+    pLost:     document.getElementById('p-lost'),
+    pNet:      document.getElementById('p-net'),
+    resetProfileBtn: document.getElementById('reset-profile-btn'),
+
+    // History
+    historyBody: document.getElementById('history-body'),
+    clearHistoryBtn: document.getElementById('clear-history-btn')
 };
 
-let vaultSlots = [0, 1, 2]; 
+let vaultSlots = [0, 1, 2];
 let pendingTimeout = null;
 let audioCtx = null;
 
+/* ---------- AUDIO ---------- */
 function initAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
 }
-
 function playSound(type) {
-    if (!gameState.soundEnabled || !audioCtx) return;
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    const now = audioCtx.currentTime;
-    if (type === 'tick') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
-        gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now); osc.stop(now + 0.1);
-    } else if (type === 'reveal') {
-        osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now + 0.3);
-        gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-        osc.start(now); osc.stop(now + 0.3);
-    } else if (type === 'win') {
-        osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(900, now + 0.1);
-        gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-        osc.start(now); osc.stop(now + 0.3);
-    } else if (type === 'lose') {
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(100, now + 0.4);
-        gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-        osc.start(now); osc.stop(now + 0.4);
-    } else if (type === 'shuffle') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
-        gain.gain.setValueAtTime(0.02, now); gain.gain.linearRampToValueAtTime(0, now + 0.05);
-        osc.start(now); osc.stop(now + 0.05);
-    }
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    const presets = {
+        tick:    { type: 'sine',     f1: 800, f2: 800, dur: 0.10, vol: 0.08 },
+        reveal:  { type: 'square',   f1: 400, f2: 800, dur: 0.30, vol: 0.05 },
+        win:     { type: 'triangle', f1: 600, f2: 900, dur: 0.30, vol: 0.10 },
+        lose:    { type: 'sawtooth', f1: 300, f2: 100, dur: 0.40, vol: 0.10 },
+        shuffle: { type: 'sine',     f1: 200, f2: 200, dur: 0.05, vol: 0.02 }
+    };
+    const p = presets[type]; if (!p) return;
+    osc.type = p.type;
+    osc.frequency.setValueAtTime(p.f1, now);
+    if (p.f1 !== p.f2) osc.frequency.linearRampToValueAtTime(p.f2, now + p.dur);
+    gain.gain.setValueAtTime(p.vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + p.dur);
+    osc.start(now); osc.stop(now + p.dur);
 }
 
+/* ---------- POSITIONING ---------- */
 function getSlotX(slotIndex) {
-    return (slotIndex - 1) * 140; // Spacing adjusted for wider vaults
+    const spacing = 240;
+    return (slotIndex - 1) * spacing;
 }
 
 function updateVaultPositions(instant = false) {
-    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     vaultSlots.forEach((vaultIdx, slotIdx) => {
         const el = els.vaults[vaultIdx];
         const x = getSlotX(slotIdx);
-        el.style.transition = (instant || isReduced) ? 'none' : 'transform var(--speed) ease-in-out';
-        const y = el.classList.contains('lifted') ? '-75px' : '0px';
-        const scale = el.classList.contains('lifted') ? '1.06' : '1';
-        el.style.transform = `translate(${x}px, ${y}) scale(${scale})`;
+        const lifted = el.classList.contains('lifted');
+        const y = lifted ? -75 : 0;
+        const scale = lifted ? 1.06 : 1;
+        el.style.transition = (instant || reduced) ? 'none' : 'transform var(--speed, 0.25s) ease-in-out';
+        el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
     });
-    
     const tokenX = getSlotX(gameState.tokenPosition);
-    els.token.style.transition = (instant || isReduced) ? 'none' : 'transform 0.1s';
+    els.token.style.transition = (instant || reduced) ? 'none' : 'transform 0.15s ease';
     els.token.style.transform = `translateX(${tokenX}px)`;
 }
 
-function delay(ms) {
-    return new Promise(resolve => { pendingTimeout = setTimeout(resolve, ms); });
-}
-
+/* ---------- DELAYS ---------- */
+function delay(ms) { return new Promise(r => { pendingTimeout = setTimeout(r, ms); }); }
 async function pauseSafeDelay(ms) {
     let remaining = ms;
-    const step = 20; 
+    const step = 20;
     while (remaining > 0) {
-        if (!gameState.isPaused) remaining -= step;
-        if (!gameState.isRunning) throw new Error("Game halted");
+        if (!gameState.isRunning) throw new Error('Game halted');
+        remaining -= step;
         await delay(step);
     }
 }
 
-els.btns.mute.innerText = gameState.soundEnabled ? '🔊 SOUND: ON' : '🔇 SOUND: OFF';
-els.btns.mute.addEventListener('click', () => {
-    initAudio();
-    gameState.soundEnabled = !gameState.soundEnabled;
-    localStorage.setItem('cyberMonteSound', gameState.soundEnabled);
-    els.btns.mute.innerText = gameState.soundEnabled ? '🔊 SOUND: ON' : '🔇 SOUND: OFF';
-});
+/* ---------- PERSISTENCE ---------- */
+function saveState() {
+    localStorage.setItem(STORAGE.balance, String(gameState.balance));
+    localStorage.setItem(STORAGE.net, String(gameState.netProfit));
+    localStorage.setItem(STORAGE.stats, JSON.stringify(stats));
+    localStorage.setItem(STORAGE.history, JSON.stringify(history.slice(0, 100)));
+}
 
-els.btns.start.addEventListener('click', startGame);
-els.btns.restart.addEventListener('click', resetGame);
-els.btns.playAgain.addEventListener('click', resetGame);
-els.btns.pause.addEventListener('click', togglePause);
+/* ---------- UI ---------- */
+function fmt(n) { return `₹${Number(n).toLocaleString('en-IN')}`; }
 
-els.vaults.forEach((v, idx) => {
-    v.addEventListener('click', () => handleVaultChoice(idx));
-});
+function renderUI() {
+    els.balance.innerText    = fmt(gameState.balance);
+    els.bet.innerText        = fmt(gameState.currentBet);
+    els.netProfit.innerText  = (gameState.netProfit >= 0 ? '+' : '') + fmt(gameState.netProfit);
+    els.netProfit.classList.toggle('win',  gameState.netProfit > 0);
+    els.netProfit.classList.toggle('lose', gameState.netProfit < 0);
+    els.navBalance.innerText = Number(gameState.balance).toLocaleString('en-IN');
+    renderProfile();
+}
 
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !els.btns.pause.disabled) {
-        e.preventDefault();
-        togglePause();
+function renderProfile() {
+    els.pUsername.innerText = 'PLAYER';
+    els.pBalance.innerText  = fmt(gameState.balance);
+    els.pGames.innerText    = stats.games;
+    els.pWins.innerText     = stats.wins;
+    els.pLosses.innerText   = stats.losses;
+    els.pWagered.innerText  = fmt(stats.wagered);
+    els.pWon.innerText      = fmt(stats.won);
+    els.pLost.innerText     = fmt(stats.lost);
+    els.pNet.innerText      = (gameState.netProfit >= 0 ? '+' : '') + fmt(gameState.netProfit);
+}
+
+function renderHistory() {
+    if (!history.length) {
+        els.historyBody.innerHTML = `<tr><td colspan="7" class="empty">No rounds yet.</td></tr>`;
+        return;
     }
-    if (gameState.phase === 'guess' && !gameState.isPaused) {
-        if (e.key === '1') handleVaultChoice(vaultSlots[0]);
-        if (e.key === '2') handleVaultChoice(vaultSlots[1]);
-        if (e.key === '3') handleVaultChoice(vaultSlots[2]);
-    }
+    els.historyBody.innerHTML = history.map(h => {
+        const d = new Date(h.date);
+        const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' +
+                        d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        const cls = h.won ? 'win' : 'lose';
+        const resultLabel = h.won ? 'WIN' : 'LOSS';
+        const payoutStr = h.won ? fmt(h.payout) : fmt(0);
+        const profitStr = (h.profit >= 0 ? '+' : '') + fmt(h.profit);
+        return `<tr>
+            <td>#${String(h.roundId).slice(-5)}</td>
+            <td>${dateStr}</td>
+            <td>${fmt(h.bet)}</td>
+            <td>V${h.chosen + 1}</td>
+            <td class="${cls}">${resultLabel}</td>
+            <td>${payoutStr}</td>
+            <td class="${cls}">${profitStr}</td>
+        </tr>`;
+    }).join('');
+}
+
+/* ---------- VALIDATION ---------- */
+function readBetInput() {
+    const v = parseInt(els.betInput.value, 10);
+    if (!Number.isFinite(v) || v < 10) return { ok: false, error: 'Minimum bet is ₹10' };
+    if (v > 10000)                return { ok: false, error: 'Maximum bet is ₹10,000' };
+    if (v > gameState.balance)    return { ok: false, error: 'Insufficient balance' };
+    return { ok: true, amount: v };
+}
+
+/* ---------- NAVBAR ---------- */
+els.navTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        els.navTabs.forEach(t => t.classList.remove('active'));
+        els.pages.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`page-${tab.dataset.page}`).classList.add('active');
+        if (tab.dataset.page === 'history') renderHistory();
+        if (tab.dataset.page === 'profile') renderProfile();
+    });
 });
 
-function togglePause() {
-    if (gameState.phase === 'gameOver' || gameState.phase === 'ready') return;
-    gameState.isPaused = !gameState.isPaused;
-    els.btns.pause.innerText = gameState.isPaused ? 'RESUME (SPACE)' : 'PAUSE (SPACE)';
-    els.status.innerText = gameState.isPaused ? 'SYSTEM PAUSED' : 'RESUMING...';
-}
+/* ---------- QUICK BET BUTTONS ---------- */
+els.quickBtns.forEach(b => {
+    b.addEventListener('click', () => {
+        els.betInput.value = b.dataset.amt;
+    });
+});
 
-function resetGame() {
-    clearTimeout(pendingTimeout);
-    gameState.isRunning = false;
-    gameState.isPaused = false;
-    gameState.score = 0;
-    gameState.level = 1;
-    gameState.lives = 3;
-    gameState.combo = 0;
-    gameState.phase = 'ready';
-    els.gameOver.classList.add('hidden');
+/* ---------- PROFILE / HISTORY ACTIONS ---------- */
+els.resetProfileBtn.addEventListener('click', () => {
+    if (!confirm('Reset your account? Balance goes back to ₹1,000 and history is cleared.')) return;
+    gameState.balance = 1000;
+    gameState.netProfit = 0;
+    stats.games = stats.wins = stats.losses = 0;
+    stats.wagered = stats.won = stats.lost = 0;
+    history = [];
+    saveState();
     renderUI();
-    startGame();
-}
+    renderHistory();
+    els.lastResult.innerText = '—';
+    els.lastResult.className = 'value';
+});
 
-async function startGame() {
-    initAudio();
-    gameState.isRunning = true;
-    els.btns.start.disabled = true;
-    els.btns.pause.disabled = false;
-    els.btns.restart.disabled = false;
-    els.status.innerText = "INITIALIZING SEQUENCE...";
-    renderUI();
-    
-    try { await startRound(); } catch (e) { if (e.message !== "Game halted") console.error(e); }
-}
+els.clearHistoryBtn.addEventListener('click', () => {
+    if (!confirm('Clear all betting history?')) return;
+    history = [];
+    saveState();
+    renderHistory();
+});
 
+/* ---------- GAME FLOW ---------- */
 async function startRound() {
-    gameState.phase = 'countdown';
-    els.token.classList.add('hidden');
+    const check = readBetInput();
+    if (!check.ok) {
+        els.status.innerText = check.error.toUpperCase();
+        return;
+    }
+
+    initAudio();
+    gameState.currentBet = check.amount;
+    gameState.balance -= check.amount;
+    gameState.isRunning = true;
+
+    // Stats: wagered & games counted when round starts
+    stats.games += 1;
+    stats.wagered += check.amount;
+
+    saveState();
+    renderUI();
+
+    els.startBtn.disabled = true;
+    els.resultPanel.classList.add('hidden');
+    els.status.innerText = 'SYSTEM ONLINE';
+
+    // Reset vaults
     els.vaults.forEach(v => {
         v.classList.remove('correct', 'wrong', 'lifted');
         v.style.zIndex = 1;
-        v.disabled = true; 
+        v.disabled = true;
     });
 
     gameState.tokenPosition = Math.floor(Math.random() * 3);
     vaultSlots = [0, 1, 2];
     updateVaultPositions(true);
 
-    await runCountdown();
-    if(!gameState.isRunning) return;
-    
-    await runReveal();
-    if(!gameState.isRunning) return;
-
-    await createAndRunShufflePlan();
+    try {
+        await runCountdown();
+        if (!gameState.isRunning) return;
+        await runReveal();
+        if (!gameState.isRunning) return;
+        await runShuffle();
+        if (!gameState.isRunning) return;
+        gameState.phase = 'guess';
+        els.status.innerText = 'CHOOSE THE VAULT!';
+        els.vaults.forEach(v => v.disabled = false);
+    } catch (e) {
+        if (e.message !== 'Game halted') console.error(e);
+    }
 }
 
 async function runCountdown() {
+    gameState.phase = 'countdown';
     for (let i = 3; i > 0; i--) {
         els.status.innerText = `SYNCING IN ${i}...`;
         playSound('tick');
-        await pauseSafeDelay(600);
+        await pauseSafeDelay(550);
     }
     els.status.innerText = 'WATCH CLOSELY!';
 }
@@ -210,172 +310,168 @@ async function runCountdown() {
 async function runReveal() {
     gameState.phase = 'reveal';
     playSound('reveal');
+
     const vaultEl = els.vaults[vaultSlots[gameState.tokenPosition]];
     vaultEl.classList.add('lifted');
-    updateVaultPositions(); 
-    
+    updateVaultPositions();
+
     await pauseSafeDelay(400);
     els.token.classList.remove('hidden');
-    await pauseSafeDelay(1000);
-    
+    await pauseSafeDelay(950);
+
     vaultEl.classList.remove('lifted');
     els.token.classList.add('hidden');
     updateVaultPositions();
-    await pauseSafeDelay(300);
+    await pauseSafeDelay(280);
 }
 
-function getShuffleSpeed() {
-    return Math.max(0.08, 0.25 - (gameState.level * 0.02));
-}
-
-async function createAndRunShufflePlan() {
+async function runShuffle() {
     gameState.phase = 'shuffle';
-    els.status.innerText = 'SHUFFLING (SHUFFLING)...';
-    
-    const numSwaps = Math.min(15 + gameState.level * 5, 45);
-    const speed = getShuffleSpeed();
+    els.status.innerText = 'SHUFFLING...';
+
+    const numSwaps = 18;
+    const speed = 0.18;
     document.documentElement.style.setProperty('--speed', `${speed}s`);
 
     for (let i = 0; i < numSwaps; i++) {
-        await pauseSafeDelay(20); 
-        
-        const isFakeOut = Math.random() < 0.3; 
-        
-        let slotA = Math.floor(Math.random() * 3);
-        let slotB = Math.floor(Math.random() * 3);
-        while (slotA === slotB) slotB = Math.floor(Math.random() * 3);
+        await pauseSafeDelay(20);
+
+        let a = Math.floor(Math.random() * 3);
+        let b = Math.floor(Math.random() * 3);
+        while (a === b) b = Math.floor(Math.random() * 3);
 
         playSound('shuffle');
 
-        if (isFakeOut) {
-            const vaultA = els.vaults[vaultSlots[slotA]];
-            const vaultB = els.vaults[vaultSlots[slotB]];
-            vaultA.style.zIndex = 5; vaultB.style.zIndex = 4;
-            
-            const midX_A = getSlotX(slotA) + (getSlotX(slotB) - getSlotX(slotA)) * 0.5;
-            const midX_B = getSlotX(slotB) + (getSlotX(slotA) - getSlotX(slotB)) * 0.5;
-            
-            vaultA.style.transform = `translateX(${midX_A}px) scale(0.9)`;
-            vaultB.style.transform = `translateX(${midX_B}px) scale(1.1)`;
-            
-            await pauseSafeDelay(speed * 500);
-            updateVaultPositions(); 
-            await pauseSafeDelay(speed * 500);
-        } else {
-            const vaultA = els.vaults[vaultSlots[slotA]];
-            const vaultB = els.vaults[vaultSlots[slotB]];
-            vaultA.style.zIndex = 5; vaultB.style.zIndex = 4;
+        [vaultSlots[a], vaultSlots[b]] = [vaultSlots[b], vaultSlots[a]];
 
-            const temp = vaultSlots[slotA];
-            vaultSlots[slotA] = vaultSlots[slotB];
-            vaultSlots[slotB] = temp;
+        if (gameState.tokenPosition === a) gameState.tokenPosition = b;
+        else if (gameState.tokenPosition === b) gameState.tokenPosition = a;
 
-            if (gameState.tokenPosition === slotA) gameState.tokenPosition = slotB;
-            else if (gameState.tokenPosition === slotB) gameState.tokenPosition = slotA;
+        els.vaults[vaultSlots[a]].style.zIndex = 5;
+        els.vaults[vaultSlots[b]].style.zIndex = 4;
 
-            updateVaultPositions();
-            await pauseSafeDelay(speed * 1000);
-        }
+        updateVaultPositions();
+        await pauseSafeDelay(speed * 1000);
     }
-
-    gameState.phase = 'guess';
-    els.status.innerText = 'CHOOSE THE GLASS!';
-    els.vaults.forEach(v => v.disabled = false);
 }
 
 async function handleVaultChoice(vaultIndex) {
-    if (gameState.phase !== 'guess' || gameState.isPaused) return;
+    if (gameState.phase !== 'guess') return;
     gameState.phase = 'result';
-    
-    els.vaults.forEach(v => {
-        v.blur();
-        v.disabled = true;
-    });
+
+    els.vaults.forEach(v => { v.blur(); v.disabled = true; });
 
     const chosenSlot = vaultSlots.indexOf(vaultIndex);
-    
-    // Rigged 45% win / 55% loss logic
-    const forceWin = Math.random() < 0.45;
+    const won = chosenSlot === gameState.tokenPosition;
 
-    if (forceWin) {
-        gameState.tokenPosition = chosenSlot;
-    } else {
-        let availableSlots = [0, 1, 2].filter(s => s !== chosenSlot);
-        gameState.tokenPosition = availableSlots[Math.floor(Math.random() * availableSlots.length)];
-    }
-
+    // Reveal token under the correct vault
     updateVaultPositions(true);
-    els.token.classList.remove('hidden'); 
+    els.token.classList.remove('hidden');
 
-    const chosenVaultEl = els.vaults[vaultIndex];
-    chosenVaultEl.classList.add('lifted');
-    updateVaultPositions();
+    const chosenEl = els.vaults[vaultIndex];
+    chosenEl.classList.add('lifted');
 
-    if (forceWin) {
+    let payout = 0;
+    let profit = -gameState.currentBet;
+
+    if (won) {
+        // User bet is already deducted. Winning returns 2x total, so credit 2x.
+        payout = gameState.currentBet * 2;
+        profit = gameState.currentBet;               // net win = +bet
+        gameState.balance += payout;
+        gameState.netProfit += profit;
+        stats.wins += 1;
+        stats.won += payout;
+
         playSound('win');
-        els.status.innerText = 'YOU WIN!'; // Explicit win status text
-        chosenVaultEl.classList.add('correct');
-        gameState.score += (100 * gameState.level) + (gameState.combo * 50);
-        gameState.combo++;
-        if (gameState.score > gameState.bestScore) {
-            gameState.bestScore = gameState.score;
-            localStorage.setItem('cyberMonteBest', gameState.bestScore);
-        }
-        if (gameState.combo % 3 === 0) gameState.level++; 
+        els.status.innerText = 'YOU WIN!';
+        chosenEl.classList.add('correct');
+        els.lastResult.innerText = `+${fmt(profit)}`;
+        els.lastResult.className = 'value win';
     } else {
+        gameState.netProfit -= gameState.currentBet;
+        stats.losses += 1;
+        stats.lost += gameState.currentBet;
+
         playSound('lose');
-        els.status.innerText = 'YOU LOSE!'; // Explicit lose status text
-        chosenVaultEl.classList.add('wrong');
-        
-        const correctVaultEl = els.vaults[vaultSlots[gameState.tokenPosition]];
-        correctVaultEl.classList.add('lifted', 'correct');
-        updateVaultPositions();
+        els.status.innerText = 'YOU LOSE!';
+        chosenEl.classList.add('wrong');
 
-        gameState.lives--;
-        gameState.combo = 0;
+        const correctEl = els.vaults[vaultSlots[gameState.tokenPosition]];
+        correctEl.classList.add('lifted', 'correct');
+
+        els.lastResult.innerText = `-${fmt(gameState.currentBet)}`;
+        els.lastResult.className = 'value lose';
     }
 
+    // Result panel
+    els.resultBet.innerText = fmt(gameState.currentBet);
+    els.resultOutcome.innerText = won ? 'WIN' : 'LOSS';
+    els.resultOutcome.className = won ? 'win' : 'lose';
+    els.resultPayout.innerText = fmt(payout);
+    els.resultProfit.innerText = (profit >= 0 ? '+' : '') + fmt(profit);
+    els.resultProfit.className = profit >= 0 ? 'win' : 'lose';
+    els.resultPanel.classList.remove('hidden');
+
+    // Save history record
+    history.unshift({
+        roundId: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        date: new Date().toISOString(),
+        bet: gameState.currentBet,
+        chosen: vaultIndex,
+        correct: vaultSlots[gameState.tokenPosition],
+        won,
+        payout,
+        profit
+    });
+    history = history.slice(0, 100);
+
+    saveState();
     renderUI();
-    await pauseSafeDelay(2500);
-    
-    if (gameState.lives > 0) {
-        startRound();
-    } else {
-        triggerGameOver();
-    }
-}
+    renderHistory();
 
-function renderUI() {
-    els.score.innerText = gameState.score;
-    els.level.innerText = gameState.level;
-    els.lives.innerText = gameState.lives;
-    els.combo.innerText = gameState.combo;
-    els.bestScore.innerText = gameState.bestScore;
-}
+    await pauseSafeDelay(2200);
 
-async function triggerGameOver() {
-    gameState.phase = 'gameOver';
+    // Reset for next round
+    els.vaults.forEach(v => {
+        v.classList.remove('correct', 'wrong', 'lifted');
+        v.style.zIndex = 1;
+        v.disabled = true;
+    });
+    els.token.classList.add('hidden');
+    updateVaultPositions(true);
+
+    gameState.phase = 'idle';
     gameState.isRunning = false;
-    els.btns.pause.disabled = true;
-    
-    els.gameOverTitle.innerText = "SYSTEM FAILURE";
-    els.finalScore.innerText = gameState.score;
-    els.bestScoreOverlay.innerText = gameState.bestScore;
-    els.gameOver.classList.remove('hidden');
-    els.serverMsg.innerText = 'Transmitting score to mainframe...';
-
-    try {
-        const res = await fetch('/api/score', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score: gameState.score, level: gameState.level })
-        });
-        if (res.ok) els.serverMsg.innerText = 'Score successfully logged on server.';
-        else els.serverMsg.innerText = 'Server rejected transmission.';
-    } catch (err) {
-        els.serverMsg.innerText = 'Network error. Score saved locally only.';
-    }
+    gameState.currentBet = 0;
+    els.startBtn.disabled = false;
+    els.status.innerText = 'PLACE YOUR BET TO PLAY AGAIN';
+    renderUI();
 }
 
+/* ---------- EVENTS ---------- */
+els.vaults.forEach((v, idx) => {
+    v.addEventListener('click', () => handleVaultChoice(idx));
+});
+
+els.startBtn.addEventListener('click', () => {
+    if (gameState.phase !== 'idle') return;
+    startRound();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        if (gameState.phase === 'idle' && !els.startBtn.disabled) startRound();
+    }
+    if (gameState.phase === 'guess') {
+        if (e.key === '1') handleVaultChoice(vaultSlots[0]);
+        if (e.key === '2') handleVaultChoice(vaultSlots[1]);
+        if (e.key === '3') handleVaultChoice(vaultSlots[2]);
+    }
+});
+
+/* ---------- BOOT ---------- */
 renderUI();
+renderHistory();
 updateVaultPositions(true);
