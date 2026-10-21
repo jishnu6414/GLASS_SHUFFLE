@@ -1,233 +1,323 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLASS SHUFFLE — BETTING</title>
+    <meta name="theme-color" content="#040914">
+    <title>GLASS SHUFFLE — LOCAL DEMO</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="game-outer-frame">
-        <div class="corner-bracket tl"></div>
-        <div class="corner-bracket tr"></div>
-        <div class="corner-bracket bl"></div>
-        <div class="corner-bracket br"></div>
-        <div class="corner-dot tl-dot"></div>
-        <div class="corner-dot tr-dot"></div>
-        <div class="corner-dot bl-dot"></div>
-        <div class="corner-dot br-dot"></div>
+        <div class="corner-bracket tl" aria-hidden="true"></div>
+        <div class="corner-bracket tr" aria-hidden="true"></div>
+        <div class="corner-bracket bl" aria-hidden="true"></div>
+        <div class="corner-bracket br" aria-hidden="true"></div>
+        <div class="corner-dot tl-dot" aria-hidden="true"></div>
+        <div class="corner-dot tr-dot" aria-hidden="true"></div>
+        <div class="corner-dot bl-dot" aria-hidden="true"></div>
+        <div class="corner-dot br-dot" aria-hidden="true"></div>
 
         <div id="game-container">
 
             <!-- ===== NAVBAR ===== -->
-            <nav class="navbar">
-    <div class="nav-brand">
-        <span class="brand-symbol">◈</span>
-        <span class="brand-text">GLASS SHUFFLE</span>
-    </div>
-    <div class="nav-tabs">
-        <button class="nav-tab active" data-page="game">GAME</button>
-        <button class="nav-tab" data-page="profile">PROFILE</button>
-        <button class="nav-tab" data-page="history">HISTORY</button>
-    </div>
-    <div class="nav-actions">
-        <button id="topup-btn" class="nav-action-btn topup-btn">
-            <span class="icon">＋</span> TOP UP
-        </button>
-        <button id="sound-toggle" class="nav-action-btn sound-btn" aria-label="Toggle sound">
-            <span class="sound-icon">🔊</span>
-        </button>
-        <div class="nav-balance">₹<span id="nav-balance-value">1,000</span></div>
-    </div>
-</nav>
-
-            <!-- ===== PAGE: GAME ===== -->
-            <section class="page active" id="page-game">
-                <header class="hud-panel">
-                    <div class="stat-box">
-                        <span class="label">BALANCE</span>
-                        <span id="balance-display" class="value">₹1,000</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="label">CURRENT BET</span>
-                        <span id="bet-display" class="value">₹0</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="label">LAST RESULT</span>
-                        <span id="last-result-display" class="value">—</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="label">NET PROFIT</span>
-                        <span id="net-profit-display" class="value">₹0</span>
-                    </div>
-                </header>
-
-                <div class="cyber-title-banner">
-                    <h1 class="main-game-title">SELECT THE VAULT!</h1>
+            <header class="navbar">
+                <div class="nav-brand" aria-label="Glass Shuffle local demo">
+                    <span class="brand-symbol" aria-hidden="true">◈</span>
+                    <span class="brand-text">GLASS SHUFFLE</span>
+                    <span class="brand-badge">LOCAL DEMO</span>
                 </div>
-
-                <div id="status-message" class="status-message" aria-live="polite">SYSTEM READY</div>
-
-                <div id="play-area">
-                    <div id="token" class="token hidden"></div>
-
-                    <button class="vault" id="vault-0" aria-label="Vault 1" tabindex="0" disabled>
-                        <div class="vault-side left"></div>
-                        <div class="vault-body">
-                            <div class="vault-top-rim"></div>
-                            <div class="vault-face">
-                                <div class="vault-emblem">
-                                    <svg viewBox="0 0 40 44">
-                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
-                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="vault-bottom-rim"></div>
-                        </div>
-                        <div class="vault-side right"></div>
-                        <div class="vault-base-glow"></div>
+                <nav class="nav-tabs" aria-label="Primary" role="tablist">
+                    <button id="tab-game" class="nav-tab active" data-page="game" data-nav-tab type="button"
+                            role="tab" aria-controls="page-game" aria-selected="true">GAME</button>
+                    <button id="tab-profile" class="nav-tab" data-page="profile" data-nav-tab type="button"
+                            role="tab" aria-controls="page-profile" aria-selected="false">PROFILE</button>
+                    <button id="tab-history" class="nav-tab" data-page="history" data-nav-tab type="button"
+                            role="tab" aria-controls="page-history" aria-selected="false">HISTORY</button>
+                </nav>
+                <div class="nav-actions">
+                    <button id="topup-btn" class="nav-action-btn topup-btn" type="button"
+                            aria-haspopup="dialog" aria-controls="topup-modal">
+                        <span class="icon" aria-hidden="true">＋</span> TOP UP
                     </button>
-
-                    <button class="vault" id="vault-1" aria-label="Vault 2" tabindex="0" disabled>
-                        <div class="vault-side left"></div>
-                        <div class="vault-body">
-                            <div class="vault-top-rim"></div>
-                            <div class="vault-face">
-                                <div class="vault-emblem">
-                                    <svg viewBox="0 0 40 44">
-                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
-                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="vault-bottom-rim"></div>
-                        </div>
-                        <div class="vault-side right"></div>
-                        <div class="vault-base-glow"></div>
+                    <button id="sound-toggle" class="nav-action-btn sound-btn" type="button"
+                            aria-label="Toggle sound" aria-pressed="false">
+                        <span class="sound-icon" aria-hidden="true">🔊</span>
                     </button>
+                    <div class="nav-balance" aria-label="Local demo balance">
+                        <span aria-hidden="true">₹</span><span id="nav-balance-value">1,000</span>
+                    </div>
+                </div>
+            </header>
 
-                    <button class="vault" id="vault-2" aria-label="Vault 3" tabindex="0" disabled>
-                        <div class="vault-side left"></div>
-                        <div class="vault-body">
-                            <div class="vault-top-rim"></div>
-                            <div class="vault-face">
-                                <div class="vault-emblem">
-                                    <svg viewBox="0 0 40 44">
-                                        <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
-                                        <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-                                    </svg>
+            <main class="page-stack">
+                <!-- ===== PAGE: GAME ===== -->
+                <section class="page active" id="page-game" role="tabpanel" aria-labelledby="tab-game" tabindex="0">
+                    <header class="hud-panel" aria-label="Round status">
+                        <div class="stat-box">
+                            <span class="label">BALANCE</span>
+                            <strong id="balance-display" class="value">₹1,000</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span class="label">CURRENT BET</span>
+                            <strong id="bet-display" class="value">₹0</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span class="label">LAST RESULT</span>
+                            <strong id="last-result-display" class="value">—</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span class="label">NET PROFIT</span>
+                            <strong id="net-profit-display" class="value">₹0</strong>
+                        </div>
+                    </header>
+
+                    <div class="cyber-title-banner">
+                        <div class="banner-copy">
+                            <span class="banner-tag">TRIPLE VAULT PROTOCOL / 01</span>
+                            <h1 class="main-game-title">SELECT THE VAULT!</h1>
+                            <span class="banner-subtitle">Track the signal. Trust your read.</span>
+                        </div>
+                        <div class="signal-mark" aria-hidden="true">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+
+                    <div id="status-message" class="status-message" role="status" aria-live="polite" aria-atomic="true">
+                        SYSTEM READY
+                    </div>
+
+                    <div id="play-area" role="group" aria-label="Vault selection area">
+                        <div class="stage-grid" aria-hidden="true"></div>
+                        <div class="stage-readout" aria-hidden="true">
+                            <span>LIVE TABLE</span>
+                            <span class="stage-readout-dot"></span>
+                            <span>3 VAULTS / 1 TOKEN</span>
+                        </div>
+                        <div id="token" class="token hidden" aria-hidden="true"></div>
+
+                        <button class="vault" id="vault-0" type="button" aria-label="Vault 1" tabindex="0" disabled>
+                            <div class="vault-side left"></div>
+                            <div class="vault-body">
+                                <div class="vault-top-rim"></div>
+                                <div class="vault-face">
+                                    <div class="vault-emblem">
+                                        <svg viewBox="0 0 40 44" aria-hidden="true">
+                                            <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                            <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                        </svg>
+                                    </div>
                                 </div>
+                                <div class="vault-bottom-rim"></div>
                             </div>
-                            <div class="vault-bottom-rim"></div>
+                            <div class="vault-side right"></div>
+                            <div class="vault-base-glow"></div>
+                        </button>
+
+                        <button class="vault" id="vault-1" type="button" aria-label="Vault 2" tabindex="0" disabled>
+                            <div class="vault-side left"></div>
+                            <div class="vault-body">
+                                <div class="vault-top-rim"></div>
+                                <div class="vault-face">
+                                    <div class="vault-emblem">
+                                        <svg viewBox="0 0 40 44" aria-hidden="true">
+                                            <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                            <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="vault-bottom-rim"></div>
+                            </div>
+                            <div class="vault-side right"></div>
+                            <div class="vault-base-glow"></div>
+                        </button>
+
+                        <button class="vault" id="vault-2" type="button" aria-label="Vault 3" tabindex="0" disabled>
+                            <div class="vault-side left"></div>
+                            <div class="vault-body">
+                                <div class="vault-top-rim"></div>
+                                <div class="vault-face">
+                                    <div class="vault-emblem">
+                                        <svg viewBox="0 0 40 44" aria-hidden="true">
+                                            <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="currentColor" stroke-width="2"/>
+                                            <polygon points="20,10 30,15 30,29 20,34 10,29 10,15" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="vault-bottom-rim"></div>
+                            </div>
+                            <div class="vault-side right"></div>
+                            <div class="vault-base-glow"></div>
+                        </button>
+                    </div>
+
+                    <!-- Bet controls -->
+                    <section class="bet-panel" aria-labelledby="bet-panel-title">
+                        <div class="bet-input-wrap">
+                            <div class="bet-heading-row">
+                                <label for="bet-input" class="bet-label" id="bet-panel-title">BET AMOUNT</label>
+                                <span class="bet-limit">₹10 — ₹10,000</span>
+                            </div>
+                            <div class="bet-input-row">
+                                <span class="currency" aria-hidden="true">₹</span>
+                                <input type="number" id="bet-input" class="bet-input"
+                                       min="10" max="10000" step="10" value="100"
+                                       inputmode="numeric" aria-describedby="bet-help">
+                            </div>
+                            <p id="bet-help" class="bet-help">Local demo credits only. Select a quick amount or enter a custom stake.</p>
+                            <div class="quick-bets" aria-label="Quick bet amounts">
+                                <button class="quick-btn" type="button" data-amt="50">₹50</button>
+                                <button class="quick-btn" type="button" data-amt="100">₹100</button>
+                                <button class="quick-btn" type="button" data-amt="500">₹500</button>
+                                <button class="quick-btn" type="button" data-amt="1000">₹1,000</button>
+                            </div>
                         </div>
-                        <div class="vault-side right"></div>
-                        <div class="vault-base-glow"></div>
-                    </button>
-                </div>
+                        <button id="start-btn" class="sci-btn primary" type="button">PLACE BET &amp; START</button>
+                    </section>
 
-                <!-- Bet controls -->
-                <div class="bet-panel">
-                    <div class="bet-input-wrap">
-                        <label for="bet-input" class="bet-label">BET AMOUNT</label>
-                        <div class="bet-input-row">
-                            <span class="currency">₹</span>
-                            <input type="number" id="bet-input" class="bet-input"
-                                   min="10" max="10000" step="10" value="100">
+                    <!-- Result panel -->
+                    <aside id="result-panel" class="result-panel hidden" aria-live="polite" aria-labelledby="result-panel-title">
+                        <h2 id="result-panel-title" class="sr-only">Latest round result</h2>
+                        <div class="result-row"><span>BET</span><strong id="result-bet">₹0</strong></div>
+                        <div class="result-row"><span>RESULT</span><strong id="result-outcome">—</strong></div>
+                        <div class="result-row"><span>PAYOUT</span><strong id="result-payout">₹0</strong></div>
+                        <div class="result-row highlight"><span>NET</span><strong id="result-profit">₹0</strong></div>
+                    </aside>
+                </section>
+
+                <!-- ===== PAGE: PROFILE ===== -->
+                <section class="page" id="page-profile" role="tabpanel" aria-labelledby="tab-profile" tabindex="0">
+                    <header class="page-heading">
+                        <div>
+                            <span class="section-kicker">PLAYER IDENTITY / LOCAL STORAGE</span>
+                            <h2 class="page-title">USER PROFILE</h2>
+                            <p class="page-intro">A compact view of this browser’s local demo activity.</p>
                         </div>
-                        <div class="quick-bets">
-                            <button class="quick-btn" data-amt="50">₹50</button>
-                            <button class="quick-btn" data-amt="100">₹100</button>
-                            <button class="quick-btn" data-amt="500">₹500</button>
-                            <button class="quick-btn" data-amt="1000">₹1,000</button>
+                        <span class="page-chip">DEMO ACCOUNT</span>
+                    </header>
+                    <div class="profile-grid">
+                        <article class="profile-card">
+                            <span class="profile-label">USERNAME</span>
+                            <strong id="p-username" class="profile-value">PLAYER</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">BALANCE</span>
+                            <strong id="p-balance" class="profile-value accent">₹0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">GAMES PLAYED</span>
+                            <strong id="p-games" class="profile-value">0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">WINS</span>
+                            <strong id="p-wins" class="profile-value green">0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">LOSSES</span>
+                            <strong id="p-losses" class="profile-value magenta">0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">TOTAL WAGERED</span>
+                            <strong id="p-wagered" class="profile-value">₹0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">TOTAL WON</span>
+                            <strong id="p-won" class="profile-value green">₹0</strong>
+                        </article>
+                        <article class="profile-card">
+                            <span class="profile-label">TOTAL LOST</span>
+                            <strong id="p-lost" class="profile-value magenta">₹0</strong>
+                        </article>
+                        <article class="profile-card wide">
+                            <span class="profile-label">NET PROFIT</span>
+                            <strong id="p-net" class="profile-value">₹0</strong>
+                        </article>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="reset-profile-btn" class="sci-btn" type="button">RESET ACCOUNT</button>
+                    </div>
+                </section>
+
+                <!-- ===== PAGE: HISTORY ===== -->
+                <section class="page" id="page-history" role="tabpanel" aria-labelledby="tab-history" tabindex="0">
+                    <header class="page-heading">
+                        <div>
+                            <span class="section-kicker">ROUND LEDGER / LOCAL STORAGE</span>
+                            <h2 class="page-title">BETTING HISTORY</h2>
+                            <p class="page-intro">Recent rounds recorded by this local demo in this browser.</p>
                         </div>
+                        <span class="page-chip">MAX 100 ROUNDS</span>
+                    </header>
+                    <div class="history-table-wrap" tabindex="0" aria-label="Betting history table">
+                        <table class="history-table">
+                            <caption class="sr-only">Recent local demo rounds</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">ROUND</th>
+                                    <th scope="col">DATE</th>
+                                    <th scope="col">BET</th>
+                                    <th scope="col">CHOSEN</th>
+                                    <th scope="col">RESULT</th>
+                                    <th scope="col">PAYOUT</th>
+                                    <th scope="col">NET</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-body">
+                                <tr><td colspan="7" class="empty">No rounds yet.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <button id="start-btn" class="sci-btn primary">PLACE BET &amp; START</button>
-                </div>
-
-                <!-- Result panel -->
-                <div id="result-panel" class="result-panel hidden">
-                    <div class="result-row"><span>BET</span><span id="result-bet">₹0</span></div>
-                    <div class="result-row"><span>RESULT</span><span id="result-outcome">—</span></div>
-                    <div class="result-row"><span>PAYOUT</span><span id="result-payout">₹0</span></div>
-                    <div class="result-row highlight"><span>NET</span><span id="result-profit">₹0</span></div>
-                </div>
-            </section>
-
-            <!-- ===== PAGE: PROFILE ===== -->
-            <section class="page" id="page-profile">
-                <h2 class="page-title">USER PROFILE</h2>
-                <div class="profile-grid">
-                    <div class="profile-card">
-                        <span class="profile-label">USERNAME</span>
-                        <span id="p-username" class="profile-value">PLAYER</span>
+                    <div class="history-actions">
+                        <button id="clear-history-btn" class="sci-btn magenta" type="button">CLEAR HISTORY</button>
                     </div>
-                    <div class="profile-card">
-                        <span class="profile-label">BALANCE</span>
-                        <span id="p-balance" class="profile-value accent">₹0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">GAMES PLAYED</span>
-                        <span id="p-games" class="profile-value">0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">WINS</span>
-                        <span id="p-wins" class="profile-value green">0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">LOSSES</span>
-                        <span id="p-losses" class="profile-value magenta">0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">TOTAL WAGERED</span>
-                        <span id="p-wagered" class="profile-value">₹0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">TOTAL WON</span>
-                        <span id="p-won" class="profile-value green">₹0</span>
-                    </div>
-                    <div class="profile-card">
-                        <span class="profile-label">TOTAL LOST</span>
-                        <span id="p-lost" class="profile-value magenta">₹0</span>
-                    </div>
-                    <div class="profile-card wide">
-                        <span class="profile-label">NET PROFIT</span>
-                        <span id="p-net" class="profile-value">₹0</span>
-                    </div>
-                </div>
-                <div class="profile-actions">
-                    <button id="reset-profile-btn" class="sci-btn">RESET ACCOUNT</button>
-                </div>
-            </section>
-
-            <!-- ===== PAGE: HISTORY ===== -->
-            <section class="page" id="page-history">
-                <h2 class="page-title">BETTING HISTORY</h2>
-                <div class="history-table-wrap">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>ROUND</th>
-                                <th>DATE</th>
-                                <th>BET</th>
-                                <th>CHOSEN</th>
-                                <th>RESULT</th>
-                                <th>PAYOUT</th>
-                                <th>NET</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-body">
-                            <tr><td colspan="7" class="empty">No rounds yet.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="history-actions">
-                    <button id="clear-history-btn" class="sci-btn magenta">CLEAR HISTORY</button>
-                </div>
-            </section>
+                </section>
+            </main>
 
         </div>
     </div>
+
+    <!-- ===== TOP-UP MODAL SKELETON =====
+         Presentation-only hooks for future local demo logic. -->
+    <div id="topup-modal" class="modal-overlay hidden" role="dialog" aria-modal="true"
+         aria-labelledby="topup-title" aria-describedby="topup-demo-note" aria-hidden="true">
+        <div class="modal" role="document">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-kicker">LOCAL DEMO WALLET</span>
+                    <h2 id="topup-title" class="modal-title">TOP UP DEMO BALANCE</h2>
+                </div>
+                <button id="topup-close" class="modal-close" type="button" aria-label="Close top up dialog">×</button>
+            </div>
+            <p class="modal-sub">Choose a local play-credit amount for this browser.</p>
+            <div class="topup-options" role="group" aria-label="Demo credit amounts">
+                <button class="topup-option" type="button" data-amount="100">
+                    <span class="option-amount">₹100</span>
+                    <span class="option-meta">STARTER</span>
+                </button>
+                <button class="topup-option" type="button" data-amount="500">
+                    <span class="option-amount">₹500</span>
+                    <span class="option-meta">BOOST</span>
+                </button>
+                <button class="topup-option" type="button" data-amount="1000">
+                    <span class="option-amount">₹1,000</span>
+                    <span class="option-meta">CORE</span>
+                </button>
+                <button class="topup-option" type="button" data-amount="5000">
+                    <span class="option-amount">₹5,000</span>
+                    <span class="option-meta">VAULT</span>
+                </button>
+            </div>
+            <p id="topup-demo-note" class="demo-note">
+                <strong>DEMO ONLY.</strong> These controls are for local play credits in this browser.
+                No payment is processed, no account is charged, and no backend API is called.
+            </p>
+            <div class="modal-actions">
+                <button id="topup-dismiss" class="sci-btn" type="button">DISMISS</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-core.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
